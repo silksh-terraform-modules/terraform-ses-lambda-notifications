@@ -51,6 +51,61 @@ module "ses_notifications" {
 3. Lambda processes the notification and stores it in the S3 bucket
 4. Lambda logs are stored in CloudWatch
 
+## S3 File Structure
+
+Notifications are stored in S3 with the following path structure:
+
+```bash
+{domain}/{notificationType}/{year}/{month}/{day}/{timestamp}-{recipient}.json
+```
+
+Example:
+
+```bash
+example.com/Delivery/2025/04/23/2025-04-23T11:00:56.724Z-user@example.com.json
+```
+
+Where:
+
+- `domain` - extracted from the sourceArn (e.g., example.com)
+- `notificationType` - type of SES notification (e.g., Delivery, Bounce, Complaint)
+- `year` - 4-digit year (YYYY)
+- `month` - 2-digit month (MM)
+- `day` - 2-digit day (DD)
+- `timestamp` - original notification timestamp
+- `recipient` - email recipient address
+
+## Data Format
+
+Each notification is stored as a JSON file containing the complete SES notification payload, including:
+
+- Notification type
+- Mail details (source, destination, headers, etc.)
+- Delivery/bounce/complaint information
+- Timestamps
+- Message ID
+
+Example notification structure:
+
+```json
+{
+  "notificationType": "Delivery",
+  "mail": {
+    "timestamp": "2025-04-23T11:00:55.911Z",
+    "source": "noreply@example.com",
+    "sourceArn": "arn:aws:ses:eu-west-1:123456789012:identity/example.com",
+    "destination": ["user@example.com"],
+    "headers": [...],
+    "commonHeaders": {...}
+  },
+  "delivery": {
+    "timestamp": "2025-04-23T11:00:56.643Z",
+    "recipients": ["user@example.com"],
+    "smtpResponse": "250 2.0.0 OK"
+  }
+}
+```
+
 ## Security
 
 - S3 bucket is configured as private (public access blocked)

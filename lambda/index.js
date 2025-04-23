@@ -6,17 +6,29 @@ exports.handler = async (event) => {
         const message = JSON.parse(event.Records[0].Sns.Message);
         const timestamp = event.Records[0].Sns.Timestamp;
         
+        // Extract domain from sourceArn
+        const sourceArn = message.mail.sourceArn;
+        const domain = sourceArn.split('/').pop();
+        
+        // Extract date components from timestamp (format: YYYY-MM-DDTHH:mm:ss.sssZ)
+        const year = timestamp.substring(0, 4);
+        const month = timestamp.substring(5, 7);
+        const day = timestamp.substring(8, 10);
+        
         // Default filename in case there is no email address
-        let filename = `${timestamp}-unknown-email.json`;
+        let originalFilename = `${timestamp}-unknown-email`;
         
         // If the message contains email information, use the email address in the filename
         if (message.mail && message.mail.destination && message.mail.destination[0]) {
-            filename = `${timestamp}-${message.mail.destination[0]}.json`;
+            originalFilename = `${timestamp}-${message.mail.destination[0]}`;
         }
+        
+        // Construct the final path
+        const key = `${domain}/${message.notificationType}/${year}/${month}/${day}/${originalFilename}.json`;
         
         const params = {
             Bucket: process.env.BUCKET_NAME,
-            Key: filename,
+            Key: key,
             Body: JSON.stringify(message),
             ContentType: 'application/json'
         };
