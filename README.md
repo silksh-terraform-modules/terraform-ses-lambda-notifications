@@ -55,4 +55,4 @@ module "ses_notifications" {
 
 - S3 bucket is configured as private (public access blocked)
 - Lambda has minimal permissions for S3 write operations
-- All resources are created with appropriate access policies 
+- All resources are created with appropriate access policies
